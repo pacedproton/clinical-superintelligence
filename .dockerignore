@@ -1,0 +1,8 @@
+node_modules
+dist
+dist-ssr
+.git
+openshift
+argocd
+*.log
+.DS_Store

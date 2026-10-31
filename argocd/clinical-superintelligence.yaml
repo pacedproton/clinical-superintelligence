@@ -1,0 +1,24 @@
+# Argo CD Application: "keep namespace `csi` equal to openshift/ in the clinical-superintelligence repo".
+# Created once with `oc apply -f argocd/clinical-superintelligence.yaml`; after that pushes to main deploy themselves.
+#
+# Prerequisite (one-time, cluster-scoped, so done by hand):
+#   oc create namespace csi
+#   oc label namespace csi argocd.argoproj.io/managed-by=openshift-gitops
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: clinical-superintelligence
+  namespace: openshift-gitops
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/pacedproton/clinical-superintelligence.git
+    targetRevision: main
+    path: openshift
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: csi
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

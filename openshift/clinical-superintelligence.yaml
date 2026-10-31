@@ -1,0 +1,127 @@
+# clinical-superintelligence.com: static site, one OpenShift project, synced by Argo CD (argocd/clinical-superintelligence.yaml).
+#
+# Reached through the shared Cloudflare tunnel; no Route/Ingress. In the Cloudflare dashboard
+# (Zero Trust -> Networks -> Tunnels -> ocp-tunnel -> Published application routes) the hostname
+# clinical-superintelligence.com points at this Service:
+#     http://clinical-superintelligence.csi.svc:8080
+#
+# No Secrets, no database. The image is built inside the cluster from a directory upload:
+#     oc -n csi start-build clinical-superintelligence --from-dir=. --follow
+# and the Deployment's ImageStream trigger rolls the pods when a new image lands.
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: clinical-superintelligence
+  namespace: csi
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: clinical-superintelligence
+  namespace: csi
+spec:
+  source:
+    type: Binary
+  strategy:
+    type: Docker
+    dockerStrategy: {}
+  output:
+    to:
+      kind: ImageStreamTag
+      name: clinical-superintelligence:latest
+  resources:
+    limits:
+      cpu: "2"
+      memory: 2Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: clinical-superintelligence
+  namespace: csi
+  labels:
+    app: clinical-superintelligence
+  annotations:
+    # roll the pods whenever the ImageStream tag moves to a new image
+    image.openshift.io/triggers: >-
+      [{"from":{"kind":"ImageStreamTag","name":"clinical-superintelligence:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"web\")].image"}]
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: clinical-superintelligence
+  template:
+    metadata:
+      labels:
+        app: clinical-superintelligence
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: web
+          image: image-registry.openshift-image-registry.svc:5000/csi/clinical-superintelligence:latest
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: tmp
+              mountPath: /tmp
+          resources:
+            requests: {cpu: 10m, memory: 32Mi}
+            limits: {cpu: 500m, memory: 128Mi}
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8080}
+            periodSeconds: 10
+          livenessProbe:
+            httpGet: {path: /healthz, port: 8080}
+            periodSeconds: 20
+      volumes:
+        - name: tmp
+          emptyDir:
+            sizeLimit: 64Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: clinical-superintelligence
+  namespace: csi
+  labels:
+    app: clinical-superintelligence
+spec:
+  selector:
+    app: clinical-superintelligence
+  ports:
+    - name: http
+      port: 8080
+      targetPort: 8080
+---
+# Only the Cloudflare tunnel may reach the pods; they need no outbound traffic at all.
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: clinical-superintelligence
+  namespace: csi
+spec:
+  podSelector:
+    matchLabels:
+      app: clinical-superintelligence
+  policyTypes: [Ingress, Egress]
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: cloudflared
+          podSelector:
+            matchLabels:
+              app: cloudflared
+      ports:
+        - protocol: TCP
+          port: 8080
+  egress: []
