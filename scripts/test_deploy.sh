@@ -16,4 +16,5 @@ test "$(grep -c '^  namespace:' "$y")" = "$(grep -c '^  namespace: csi$' "$y")"
 # the Dockerfile copies what the build produces and the config it serves
 grep -q 'COPY nginx.conf' Dockerfile
 grep -q '/src/dist' Dockerfile
+grep -q 'ignoreDifferences' argocd/clinical-superintelligence.yaml
 echo deploy files ok

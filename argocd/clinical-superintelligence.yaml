@@ -18,6 +18,13 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: csi
+  # The ImageStream trigger rewrites the container image to the digest of each new build; that is
+  # intended, so Argo must not treat it as drift.
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jqPathExpressions:
+        - .spec.template.spec.containers[] | select(.name == "web") | .image
   syncPolicy:
     automated:
       prune: true
