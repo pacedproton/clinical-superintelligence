@@ -262,6 +262,17 @@ export function Home() {
               </div>
               <p className="split__body body reveal">{research.intro}</p>
             </div>
+            <a className="publication reveal" href="/research/oxygen-extraction-margin/">
+              <span className="publication__kind mono">Working paper &middot; CSI-WP-2026-01</span>
+              <span className="publication__title">Reproducing and stress-testing an oxygen extraction margin</span>
+              <span className="publication__sub">
+                An uncertainty analysis of an AI-assisted reconstruction of the neonatal oxygenation timeline in our
+                case study.
+              </span>
+              <span className="publication__cta">
+                Read the paper <span aria-hidden="true">&rarr;</span>
+              </span>
+            </a>
             <ol className="agenda">
               {research.items.map((r, i) => (
                 <li key={r.title} className="agenda__item reveal">

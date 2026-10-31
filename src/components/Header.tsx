@@ -3,12 +3,12 @@ import { nav, site } from '../content/site';
 
 type Props = {
   /** On the home page links are in-page anchors; elsewhere they point back home. */
-  page: 'home' | 'case';
+  page: 'home' | 'case' | 'paper';
 };
 
 export function Header({ page }: Props) {
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState<string | null>(page === 'case' ? 'case-study' : null);
+  const [active, setActive] = useState<string | null>(page === 'case' ? 'case-study' : page === 'paper' ? 'research' : null);
   const [scrolled, setScrolled] = useState(false);
 
   const href = (id: string) => {

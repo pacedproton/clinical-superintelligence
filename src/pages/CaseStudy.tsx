@@ -250,8 +250,8 @@ export function CaseStudy() {
                         &rarr;
                       </span>
                     </a>
-                    <a className="btn btn-secondary" href="/#research">
-                      See the research agenda
+                    <a className="btn btn-secondary" href="/research/oxygen-extraction-margin/">
+                      Read the working paper
                     </a>
                   </p>
                 </div>

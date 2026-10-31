@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         home: resolve(__dirname, 'index.html'),
         caseStudy: resolve(__dirname, 'case-study/index.html'),
+        paper: resolve(__dirname, 'research/oxygen-extraction-margin/index.html'),
       },
     },
   },

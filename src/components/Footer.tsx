@@ -1,6 +1,6 @@
 import { nav, site } from '../content/site';
 
-export function Footer({ page }: { page: 'home' | 'case' }) {
+export function Footer({ page }: { page: 'home' | 'case' | 'paper' }) {
   const href = (id: string) => (page === 'home' ? `#${id}` : `/#${id}`);
   return (
     <footer className="site-footer">
@@ -20,6 +20,9 @@ export function Footer({ page }: { page: 'home' | 'case' }) {
               ))}
               <li>
                 <a href="/case-study/">Full case study</a>
+              </li>
+              <li>
+                <a href="/research/oxygen-extraction-margin/">Working paper</a>
               </li>
             </ul>
           </nav>

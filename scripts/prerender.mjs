@@ -10,6 +10,7 @@ const { render } = await import(pathToFileURL(resolve(root, 'dist-ssr/entry-serv
 const pages = [
   { file: 'dist/index.html', page: 'home' },
   { file: 'dist/case-study/index.html', page: 'case' },
+  { file: 'dist/research/oxygen-extraction-margin/index.html', page: 'paper' },
 ];
 
 for (const { file, page } of pages) {
