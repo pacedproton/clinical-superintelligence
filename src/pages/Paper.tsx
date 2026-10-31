@@ -1,3 +1,5 @@
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import type { ReactNode } from 'react';
 import { useReveal } from '../lib/hooks';
 import { rich } from '../lib/rich';
@@ -29,15 +31,21 @@ function Cite({ n }: { n: number | number[] }) {
   );
 }
 
-function Eq({ n, mathml, label }: { n: number; mathml: string; label: string }) {
+function Eq({ n, tex, label }: { n: number; tex: string; label: string }) {
+  const html = katex.renderToString(tex, { displayMode: true, output: 'htmlAndMathml', throwOnError: true });
   return (
     <div className="eq" role="group" aria-label={`Equation ${n}: ${label}`}>
-      <div className="eq__math" dangerouslySetInnerHTML={{ __html: mathml }} />
+      <div className="eq__math" dangerouslySetInnerHTML={{ __html: html }} />
       <span className="eq__n mono" aria-hidden="true">
         ({n})
       </span>
     </div>
   );
+}
+
+function Tex({ children }: { children: string }) {
+  const html = katex.renderToString(children, { output: 'htmlAndMathml', throwOnError: true });
+  return <span className="tex-inline" dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 function H2({ id, n, children }: { id: string; n: string; children: ReactNode }) {
@@ -84,19 +92,22 @@ function Tbl({ n, id, title, children, note }: { n: number; id: string; title: s
   );
 }
 
-const m = (s: string) => `<math display="block">${s}</math>`;
-const mi = (s: string) => `<math>${s}</math>`;
-
-/* ---------- equations (MathML) ---------- */
+/* ---------- equations (LaTeX, rendered to HTML + MathML by KaTeX at build time) ---------- */
 const EQ = {
-  sat: m(`<msub><mi>S</mi><mi>a</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>SpO</mi><mn>2</mn></msub><mo>&#x2212;</mo><mi>b</mi></mrow><mn>100</mn></mfrac>`),
-  bohr: m(`<msub><mi>P</mi><mrow><mn>50</mn><mo>,</mo><mi>a</mi></mrow></msub><mo>=</mo><msub><mi>P</mi><mn>50</mn></msub><mo>&#xB7;</mo><msup><mn>10</mn><mrow><mn>0.48</mn><mo>(</mo><mn>7.4</mn><mo>&#x2212;</mo><msub><mtext>pH</mtext><mi>a</mi></msub><mo>)</mo></mrow></msup><mo>,</mo><mspace width="1em"/><msub><mi>P</mi><mrow><mn>50</mn><mo>,</mo><mi>v</mi></mrow></msub><mo>=</mo><msub><mi>P</mi><mn>50</mn></msub><mo>&#xB7;</mo><msup><mn>10</mn><mrow><mn>0.48</mn><mo>(</mo><mn>7.4</mn><mo>&#x2212;</mo><msub><mtext>pH</mtext><mi>a</mi></msub><mo>+</mo><mi>&#x394;</mi><mtext>pH</mtext><mo>)</mo></mrow></msup>`),
-  hill: m(`<msub><mtext>PaO</mtext><mn>2</mn></msub><mo>=</mo><msub><mi>P</mi><mrow><mn>50</mn><mo>,</mo><mi>a</mi></mrow></msub><msup><mrow><mo>(</mo><mfrac><msub><mi>S</mi><mi>a</mi></msub><mrow><mn>1</mn><mo>&#x2212;</mo><msub><mi>S</mi><mi>a</mi></msub></mrow></mfrac><mo>)</mo></mrow><mrow><mn>1</mn><mo>/</mo><mi>n</mi></mrow></msup>`),
-  floor: m(`<msub><mi>S</mi><mrow><mi>v</mi><mo>,</mo><mtext>crit</mtext></mrow></msub><mo>=</mo><mfrac><msubsup><mi>P</mi><mrow><mi>v</mi><mo>,</mo><mtext>crit</mtext></mrow><mi>n</mi></msubsup><mrow><msubsup><mi>P</mi><mrow><mi>v</mi><mo>,</mo><mtext>crit</mtext></mrow><mi>n</mi></msubsup><mo>+</mo><msubsup><mi>P</mi><mrow><mn>50</mn><mo>,</mo><mi>v</mi></mrow><mi>n</mi></msubsup></mrow></mfrac>`),
-  content: m(`<msub><mtext>CaO</mtext><mn>2</mn></msub><mo>=</mo><mn>1.34</mn><mspace width="0.2em"/><mtext>Hb</mtext><mspace width="0.2em"/><msub><mi>S</mi><mi>a</mi></msub><mo>+</mo><mn>0.003</mn><mspace width="0.2em"/><msub><mtext>PaO</mtext><mn>2</mn></msub><mo>,</mo><mspace width="1em"/><msub><mi>C</mi><mrow><mi>v</mi><mo>,</mo><mtext>crit</mtext></mrow></msub><mo>=</mo><mn>1.34</mn><mspace width="0.2em"/><mtext>Hb</mtext><mspace width="0.2em"/><msub><mi>S</mi><mrow><mi>v</mi><mo>,</mo><mtext>crit</mtext></mrow></msub><mo>+</mo><mn>0.003</mn><mspace width="0.2em"/><msub><mi>P</mi><mrow><mi>v</mi><mo>,</mo><mtext>crit</mtext></mrow></msub>`),
-  margin: m(`<mi>M</mi><mo>=</mo><mfrac><mrow><mi>Q</mi><mspace width="0.15em"/><mi>f</mi><mspace width="0.15em"/><mo>(</mo><msub><mtext>CaO</mtext><mn>2</mn></msub><mo>&#x2212;</mo><msub><mi>C</mi><mrow><mi>v</mi><mo>,</mo><mtext>crit</mtext></mrow></msub><mo>)</mo></mrow><mrow><msub><mover><mi>V</mi><mo>&#x2D9;</mo></mover><mrow><msub><mi>O</mi><mn>2</mn></msub></mrow></msub></mrow></mfrac>`),
-  elastic: m(`<msub><mi>&#x3B5;</mi><mi>&#x3B8;</mi></msub><mo>=</mo><mfrac><mrow><mo>&#x2202;</mo><mi>ln</mi><mi>M</mi></mrow><mrow><mo>&#x2202;</mo><mi>ln</mi><mi>&#x3B8;</mi></mrow></mfrac><mo>,</mo><mspace width="1.2em"/><msub><mi>&#x3B5;</mi><msub><mi>S</mi><mi>a</mi></msub></msub><mo>&#x2248;</mo><mfrac><msub><mi>S</mi><mi>a</mi></msub><mrow><msub><mi>S</mi><mi>a</mi></msub><mo>&#x2212;</mo><msub><mi>S</mi><mrow><mi>v</mi><mo>,</mo><mtext>crit</mtext></mrow></msub></mrow></mfrac>`),
-  debt: m(`<mi>D</mi><mo>=</mo><munder><mo>&#x2211;</mo><mi>i</mi></munder><msub><mover><mi>V</mi><mo>&#x2D9;</mo></mover><mrow><msub><mi>O</mi><mn>2</mn></msub></mrow></msub><mspace width="0.15em"/><mo>max</mo><mo>(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo>&#x2212;</mo><msub><mi>M</mi><mi>i</mi></msub><mo>)</mo><mspace width="0.15em"/><mi>&#x394;</mi><msub><mi>t</mi><mi>i</mi></msub>`),
+  sat: String.raw`S_a = \frac{\mathrm{SpO_2} - b}{100}`,
+  bohr: String.raw`\begin{aligned}
+P_{50,a} &= P_{50}\cdot 10^{\,0.48\,(7.4-\mathrm{pH}_a)} \\
+P_{50,v} &= P_{50}\cdot 10^{\,0.48\,(7.4-\mathrm{pH}_a+\Delta\mathrm{pH})}
+\end{aligned}`,
+  hill: String.raw`\mathrm{PaO_2} = P_{50,a}\left(\frac{S_a}{1-S_a}\right)^{1/n}`,
+  floor: String.raw`S_{v,\mathrm{crit}} = \frac{P_{v,\mathrm{crit}}^{\,n}}{P_{v,\mathrm{crit}}^{\,n} + P_{50,v}^{\,n}}`,
+  content: String.raw`\begin{aligned}
+\mathrm{CaO_2} &= 1.34\,\mathrm{Hb}\,S_a + 0.003\,\mathrm{PaO_2} \\
+C_{v,\mathrm{crit}} &= 1.34\,\mathrm{Hb}\,S_{v,\mathrm{crit}} + 0.003\,P_{v,\mathrm{crit}}
+\end{aligned}`,
+  margin: String.raw`M = \frac{Q\,f\,\left(\mathrm{CaO_2} - C_{v,\mathrm{crit}}\right)}{\dot V_{\mathrm{O_2}}}`,
+  elastic: String.raw`\varepsilon_\theta = \frac{\partial \ln M}{\partial \ln \theta}, \qquad \varepsilon_{S_a} \approx \frac{S_a}{S_a - S_{v,\mathrm{crit}}}`,
+  debt: String.raw`D = \sum_i \dot V_{\mathrm{O_2}}\,\max\!\left(0,\, 1 - M_i\right)\Delta t_i`,
 };
 
 const fmt2 = (v: number) => v.toFixed(2);
@@ -369,30 +380,30 @@ export function Paper() {
                   The calculator was re-implemented from its displayed equations, labels, and intermediate values. The
                   pulse-oximeter reading, corrected for an optional bias <em>b</em>, is taken as arterial saturation:
                 </p>
-                <Eq n={1} mathml={EQ.sat} label="arterial saturation from the oximeter reading" />
+                <Eq n={1} tex={EQ.sat} label="arterial saturation from the oximeter reading" />
                 <p>
                   The standard P<sub>50</sub> (the PO<sub>2</sub> at which haemoglobin is half saturated) is shifted for
                   arterial and venous pH. A Bohr coefficient of 0.48 reproduces the calculator&rsquo;s displayed values
                   (19 mmHg at pH 7.40 becomes 21.7 mmHg at pH 7.28 and 23.2 mmHg at 7.22):
                 </p>
-                <Eq n={2} mathml={EQ.bohr} label="Bohr-adjusted arterial and venous P50" />
+                <Eq n={2} tex={EQ.bohr} label="Bohr-adjusted arterial and venous P50" />
                 <p>Arterial PO<sub>2</sub> follows by inverting the Hill equation with exponent <em>n</em>:</p>
-                <Eq n={3} mathml={EQ.hill} label="arterial PO2 from the Hill equation" />
+                <Eq n={3} tex={EQ.hill} label="arterial PO2 from the Hill equation" />
                 <p>
-                  A critical venous PO<sub>2</sub>, <i>P</i><sub>v,crit</sub>, labelled by the calculator as a
+                  A critical venous PO<sub>2</sub>, <Tex>{String.raw`P_{v,\mathrm{crit}}`}</Tex>, labelled by the calculator as a
                   &ldquo;cerebral/coronary limit&rdquo;, defines the saturation below which oxygen is treated as
                   unavailable to tissue:
                 </p>
-                <Eq n={4} mathml={EQ.floor} label="critical venous saturation" />
+                <Eq n={4} tex={EQ.floor} label="critical venous saturation" />
                 <p>Oxygen contents (mL O<sub>2</sub>/dL) use the conventional binding and solubility constants:</p>
-                <Eq n={5} mathml={EQ.content} label="arterial and critical venous oxygen content" />
+                <Eq n={5} tex={EQ.content} label="arterial and critical venous oxygen content" />
                 <p>
                   The extraction margin is the oxygen deliverable above the floor, per unit demand, where <em>Q</em> is
                   cardiac output, <em>f</em> the fraction of flow treated as non-shunted, and
-                  {' '}<span dangerouslySetInnerHTML={{ __html: mi('<msub><mover><mi>V</mi><mo>&#x2D9;</mo></mover><mrow><msub><mi>O</mi><mn>2</mn></msub></mrow></msub>') }} />{' '}
+                  {' '}<Tex>{String.raw`\dot V_{\mathrm{O_2}}`}</Tex>{' '}
                   whole-body oxygen demand:
                 </p>
-                <Eq n={6} mathml={EQ.margin} label="extraction margin" />
+                <Eq n={6} tex={EQ.margin} label="extraction margin" />
                 <p>
                   Values of <em>M</em> below 1 are interpreted by the calculator as a hypoxic deficit. Default inputs are
                   listed in Table 2.
@@ -412,7 +423,7 @@ export function Paper() {
                   Local sensitivity was measured by the elasticity of <em>M</em> with respect to each input, by central
                   differences at default values:
                 </p>
-                <Eq n={7} mathml={EQ.elastic} label="elasticity definition and approximation for saturation" />
+                <Eq n={7} tex={EQ.elastic} label="elasticity definition and approximation for saturation" />
                 <p>
                   An elasticity of 4 means that a 1% relative change in the input changes <em>M</em> by about 4%. The
                   approximation in Equation 7 neglects dissolved oxygen and follows directly from Equations 5 and 6. Each
@@ -458,7 +469,7 @@ export function Paper() {
                 </Tbl>
 
                 <p>Cumulative oxygen debt was computed as in the reconstruction:</p>
-                <Eq n={8} mathml={EQ.debt} label="cumulative oxygen debt" />
+                <Eq n={8} tex={EQ.debt} label="cumulative oxygen debt" />
                 <p>
                   with phases at 50% (start of the assumed deficit to minute 17), 58% (minutes 17-27), and a 1.5-minute
                   transition at 61%. We varied the assumed start of the deficit from minute 5 to minute 17.

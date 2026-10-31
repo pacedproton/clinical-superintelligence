@@ -372,9 +372,16 @@
   padding: 4px 0;
 }
 
-.eq__math math {
+.eq__math .katex-display {
+  margin: 0;
+}
+
+.eq__math .katex {
   font-size: 1.12em;
-  font-family: 'STIX Two Math', 'Cambria Math', 'Latin Modern Math', math, serif;
+}
+
+.tex-inline .katex {
+  font-size: 1.04em;
 }
 
 .eq__n {
