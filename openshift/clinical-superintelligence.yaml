@@ -29,10 +29,10 @@ spec:
     to:
       kind: ImageStreamTag
       name: clinical-superintelligence:latest
+  # requests are explicit: limits alone become the requests, and this node has no 2 free CPUs
   resources:
-    limits:
-      cpu: "2"
-      memory: 2Gi
+    requests: {cpu: 200m, memory: 512Mi}
+    limits: {cpu: "2", memory: 2Gi}
 ---
 apiVersion: apps/v1
 kind: Deployment
